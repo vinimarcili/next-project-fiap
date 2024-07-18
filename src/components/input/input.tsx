@@ -4,13 +4,13 @@ import { InputHTMLAttributes, ChangeEvent, useCallback, ReactNode, useState, use
 
 // Definição das propriedades aceitas pelo componente Input, estendendo as propriedades padrão de um input HTML
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  handleChange?: (value: string, e?: ChangeEvent<HTMLInputElement>) => void // Função opcional para lidar com mudanças no input
+  handleChange?: (value: string, e: ChangeEvent<HTMLInputElement>) => void // Função opcional para lidar com mudanças no input
   label?: ReactNode // Conteúdo opcional para rótulo do input
   customError?: string | null // Mensagem de erro personalizada
 }
 
 // Componente funcional Input que renderiza um input HTML personalizado
-const Input = ({ handleChange, disabled, className = '', label = '', customError = '', ...props }: InputProps) => {
+const Input = ({ handleChange, disabled, readOnly, className = '', label = '', customError = '', ...props }: InputProps) => {
   const [error, setError] = useState<string | null>(null) // Estado para controlar mensagens de erro
 
   // Callback para lidar com mudanças no input
@@ -26,8 +26,11 @@ const Input = ({ handleChange, disabled, className = '', label = '', customError
     }
   }, [handleChange]) // Dependência do callback de mudança
 
-  // Verificar se há erro
+  // Variaveis auxiliares para controle de estado
   const errorMessage = useMemo(() => customError || error, [customError, error])
+  const hasActionsState = useMemo(() => disabled || readOnly, [disabled, readOnly])
+  const hasControllState = useMemo(() => hasActionsState || errorMessage, [hasActionsState, errorMessage])
+  const canShowError = useMemo(() => errorMessage && !hasActionsState, [errorMessage, hasActionsState])
 
   return (
     <div className='w-full'>
@@ -44,17 +47,20 @@ const Input = ({ handleChange, disabled, className = '', label = '', customError
         onChange={onHandleChange} // Atribui o callback de mudança ao evento onChange
         className={`
           w-full block p-2 border rounded 
-          focus:outline-none focus:ring-1 ring-current
-          ${disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'} 
-          ${errorMessage ? 'border-red-500 border-2 ring-red-500' : 'border-neutral-900'} 
+          focus:outline-none focus:ring-1 ring-current border-neutral-900
+          ${!hasControllState ? 'bg-white border-neutral-900' : ''}
+          ${disabled ? 'bg-gray-300 border-gray-300 cursor-not-allowed' : ''} 
+          ${readOnly ? 'bg-gray-100 border-gray-100' : ''}
+          ${canShowError ? 'border-red-500 border-2 ring-red-500' : ''} 
           ${className}
         `} // Classes CSS condicionais baseadas em propriedades
         disabled={disabled} // Define se o input está desabilitado ou não
+        readOnly={readOnly} // Define se o input é somente leitura ou não
       />
       {/* Exibe a mensagem de erro se houver */}
       <span className={`
         min-h-4 text-red-500 text-xs px-0.5 pt-0.5 block leading-none 
-        ${errorMessage ? 'opacity-100 ' : 'opacity-0'}
+        ${canShowError ? 'opacity-100 ' : 'opacity-0'}
       `}
       >
         {errorMessage}
