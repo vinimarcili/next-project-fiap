@@ -1,15 +1,16 @@
 "use client" // Declaração para uso do cliente
 
-import { InputHTMLAttributes, ChangeEvent, useCallback, ReactNode, useState } from "react"
+import { InputHTMLAttributes, ChangeEvent, useCallback, ReactNode, useState, useEffect } from "react"
 
 // Definição das propriedades aceitas pelo componente Input, estendendo as propriedades padrão de um input HTML
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   handleChange?: (value: string, e?: ChangeEvent<HTMLInputElement>) => void // Função opcional para lidar com mudanças no input
   label?: ReactNode // Conteúdo opcional para rótulo do input
+  customError?: string | null // Mensagem de erro personalizada
 }
 
 // Componente funcional Input que renderiza um input HTML personalizado
-const Input = ({ handleChange, disabled, className = '', label = '', ...props }: InputProps) => {
+const Input = ({ handleChange, disabled, className = '', label = '', customError = '', ...props }: InputProps) => {
   const [error, setError] = useState<string | null>(null) // Estado para controlar mensagens de erro
 
   // Callback para lidar com mudanças no input
@@ -24,6 +25,11 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
       handleChange(value, e)
     }
   }, [handleChange]) // Dependência do callback de mudança
+
+  // Callback para verificar se há erro
+  const getError = useCallback(() => {
+    return customError || error
+  }, [customError, error])
 
   return (
     <div className='w-full'>
@@ -42,7 +48,7 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
           w-full block p-2 border rounded 
           focus:outline-none focus:ring-1 ring-current
           ${disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'} 
-          ${error ? 'border-red-500 border-2 ring-red-500' : 'border-neutral-900'} 
+          ${getError() ? 'border-red-500 border-2 ring-red-500' : 'border-neutral-900'} 
           ${className}
         `} // Classes CSS condicionais baseadas em propriedades
         disabled={disabled} // Define se o input está desabilitado ou não
@@ -50,10 +56,10 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
       {/* Exibe a mensagem de erro se houver */}
       <span className={`
         min-h-4 text-red-500 text-xs px-0.5 pt-0.5 block leading-none 
-        ${error ? 'opacity-100 ' : 'opacity-0'}
+        ${getError() ? 'opacity-100 ' : 'opacity-0'}
       `}
       >
-        {error}
+        {getError()}
       </span>
     </div>
   )
