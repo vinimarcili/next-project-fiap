@@ -49,7 +49,7 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
       />
       {/* Exibe a mensagem de erro se houver */}
       <span className={`
-        min-h-6 text-red-500 text-xs px-0.5 pt-0.5 block leading-none 
+        min-h-4 text-red-500 text-xs px-0.5 pt-0.5 block leading-none 
         ${error ? 'opacity-100 ' : 'opacity-0'}
       `}
       >

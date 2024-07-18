@@ -5,7 +5,7 @@ import Input from "@/components/input/input"
 
 const LoginForm = () => {
   return (
-    <form className="w-max flex flex-col gap-2 p-3 bg-white rounded shadow mx-auto">
+    <form className="w-full flex flex-col gap-2">
       <Input
         label='E-mail'
         type='email'
