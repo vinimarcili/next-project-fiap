@@ -2,28 +2,50 @@
 
 import Button from "@/components/button/button"
 import Input from "@/components/input/input"
-import useForm from "@/hooks/use-form/use-form"
-import { FormEvent, useState } from "react"
+import useForm, { FormState } from "@/hooks/use-form/use-form"
 
 const LoginForm = () => {
-  // const [loginForm, setLoginForm] = useState({
-  //   email: '',
-  //   password: ''
-  // })
-  // const {} = useForm(loginForm)
+  const initialLoginForm = {
+    email: '',
+    password: ''
+  }
+  const {
+    data: {
+      email,
+      password
+    },
+    loading,
+    handleChange,
+    handleSubmit
+  } = useForm(
+    initialLoginForm,
+    submitCallback
+  )
 
-  const validate = (e: FormEvent<HTMLFormElement>) => {
+  async function submitCallback(values: FormState) {
+    console.log(values)
 
+    // TODO: Envie os dados do formulário para a API
+
+    // DO fake request to take 5s
+    await new Promise((resolve) => setTimeout(resolve, 5000))
   }
 
   return (
-    <form className="w-full flex flex-col gap-2" noValidate>
+    <form
+      className="w-full flex flex-col gap-2"
+      onSubmit={handleSubmit}
+      noValidate
+    >
       <Input
         label='E-mail'
         type='email'
         name='email'
         id='email'
         placeholder='E-mail'
+        value={email}
+        handleChange={(_, e) => handleChange(e)}
+        readOnly={loading}
         required
       />
       <Input
@@ -33,9 +55,12 @@ const LoginForm = () => {
         id='password'
         placeholder='Senha'
         minLength={6}
+        value={password}
+        handleChange={(_, e) => handleChange(e)}
+        readOnly={loading}
         required
       />
-      <Button type='submit'>
+      <Button type='submit' disabled={loading}>
         Entrar
       </Button>
     </form>
