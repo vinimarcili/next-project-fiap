@@ -26,11 +26,11 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
   }, [handleChange]) // Dependência do callback de mudança
 
   return (
-    <>
+    <div className='w-full'>
       {label && (
         <label
           htmlFor={props.id ?? props.name ?? ''}
-          className={`block font-medium mb-0.5 px-0.5`}
+          className={`block font-medium mb-0.5 px-0.5 text-left text-neutral-900 text-sm`}
         >
           {label}
         </label>
@@ -38,11 +38,24 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
       <input
         {...props} // Passa todas as outras propriedades para o input HTML
         onChange={onHandleChange} // Atribui o callback de mudança ao evento onChange
-        className={`block p-2 border rounded ${disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'} ${className}`} // Classes CSS condicionais baseadas em propriedades
+        className={`
+          w-full block p-2 border rounded 
+          focus:outline-none focus:ring-1 ring-current
+          ${disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'} 
+          ${error ? 'border-red-500 border-2 ring-red-500' : 'border-neutral-900'} 
+          ${className}
+        `} // Classes CSS condicionais baseadas em propriedades
         disabled={disabled} // Define se o input está desabilitado ou não
       />
-      <span className={`text-red-500 text-sm py-1 px-0.5 ${error ? 'block' : 'none'}`}>{error}</span> {/* Exibe a mensagem de erro se houver */}
-    </>
+      {/* Exibe a mensagem de erro se houver */}
+      <span className={`
+        min-h-6 text-red-500 text-xs px-0.5 pt-0.5 block leading-none 
+        ${error ? 'opacity-100 ' : 'opacity-0'}
+      `}
+      >
+        {error}
+      </span>
+    </div>
   )
 }
 
