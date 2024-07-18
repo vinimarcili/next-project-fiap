@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt-br" className='w-full h-full'>
+    <html lang="pt-br" className='w-full h-full overflow-x-hidden'>
       <body className={`${inter.className} w-full h-full min-h-screen flex flex-col`}>
         {children}
         <Footer />
