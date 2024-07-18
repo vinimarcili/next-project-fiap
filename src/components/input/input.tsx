@@ -30,7 +30,7 @@ const Input = ({ handleChange, disabled, className = '', label = '', ...props }:
       {label && (
         <label
           htmlFor={props.id ?? props.name ?? ''}
-          className={`block font-medium mb-0.5 px-0.5`}
+          className={`block font-medium mb-0.5 px-0.5 text-left text-neutral-900 text-sm`}
         >
           {label}
         </label>
