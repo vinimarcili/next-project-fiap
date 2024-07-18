@@ -1,6 +1,6 @@
 "use client" // Declaração para uso do cliente
 
-import { InputHTMLAttributes, ChangeEvent, useCallback, ReactNode, useState, useEffect } from "react"
+import { InputHTMLAttributes, ChangeEvent, useCallback, ReactNode, useState, useEffect, useMemo } from "react"
 
 // Definição das propriedades aceitas pelo componente Input, estendendo as propriedades padrão de um input HTML
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -26,10 +26,8 @@ const Input = ({ handleChange, disabled, className = '', label = '', customError
     }
   }, [handleChange]) // Dependência do callback de mudança
 
-  // Callback para verificar se há erro
-  const getError = useCallback(() => {
-    return customError || error
-  }, [customError, error])
+  // Verificar se há erro
+  const errorMessage = useMemo(() => customError || error, [customError, error])
 
   return (
     <div className='w-full'>
@@ -48,7 +46,7 @@ const Input = ({ handleChange, disabled, className = '', label = '', customError
           w-full block p-2 border rounded 
           focus:outline-none focus:ring-1 ring-current
           ${disabled ? 'bg-gray-200 cursor-not-allowed' : 'bg-white'} 
-          ${getError() ? 'border-red-500 border-2 ring-red-500' : 'border-neutral-900'} 
+          ${errorMessage ? 'border-red-500 border-2 ring-red-500' : 'border-neutral-900'} 
           ${className}
         `} // Classes CSS condicionais baseadas em propriedades
         disabled={disabled} // Define se o input está desabilitado ou não
@@ -56,10 +54,10 @@ const Input = ({ handleChange, disabled, className = '', label = '', customError
       {/* Exibe a mensagem de erro se houver */}
       <span className={`
         min-h-4 text-red-500 text-xs px-0.5 pt-0.5 block leading-none 
-        ${getError() ? 'opacity-100 ' : 'opacity-0'}
+        ${errorMessage ? 'opacity-100 ' : 'opacity-0'}
       `}
       >
-        {getError()}
+        {errorMessage}
       </span>
     </div>
   )
