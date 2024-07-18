@@ -8,11 +8,16 @@ interface ErrorsState {
   [key: string]: string
 }
 
-type ValidateFunction = (target: FormEvent<HTMLFormElement>) => ErrorsState
+type SetCustomErrorsFunction = (target: FormEvent<HTMLFormElement>) => ErrorsState
 
-type submitCallback = (values: FormState, target?: FormEvent<HTMLFormElement>) => Promise<void>
+type SubmitCallbackFunction = (values: FormState, target?: FormEvent<HTMLFormElement>) => Promise<void>
 
-const useForm = (initialState: FormState, submitCallback: submitCallback, setCustomErrors?: ValidateFunction,) => {
+const useForm = (
+  initialState: FormState,
+  submitCallback: SubmitCallbackFunction,
+  onError?: (error: Error) => void,
+  setCustomErrors?: SetCustomErrorsFunction,
+) => {
   const [loading, setLoading] = useState(false)
   const [data, setData] = useState<FormState>(initialState)
   const [errors, setErrors] = useState<ErrorsState>({})
@@ -64,23 +69,24 @@ const useForm = (initialState: FormState, submitCallback: submitCallback, setCus
 
     if (countErrors) {
       setLoading(false)
-      throw new Error('Formulário inválido', {
+      onError?.(new Error('Formulário inválido', {
         cause: {
-          errors: validationErrors
+          ...validationErrors
         }
-      })
+      }))
+      return
     }
 
     await submitCallback(data, e)
 
     setLoading(false)
-  }, [loading, setCustomErrors, submitCallback, validateDefault, data])
+  }, [loading, setCustomErrors, submitCallback, validateDefault, data, onError])
 
   return {
     data,
     errors,
     errorsCount,
-    loading,
+    loadingSubmit: loading,
     handleChange,
     handleSubmit
   }

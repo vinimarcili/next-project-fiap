@@ -14,13 +14,19 @@ const LoginForm = () => {
       email,
       password
     },
-    loading,
+    loadingSubmit,
     handleChange,
     handleSubmit
   } = useForm(
     initialLoginForm,
-    submitCallback
+    submitCallback,
+    submitErrorCallback
   )
+
+  async function submitErrorCallback(error: Error) {
+    // TODO: Tratar erros
+    console.log(error.cause)
+  }
 
   async function submitCallback(values: FormState) {
     console.log(values)
@@ -45,7 +51,7 @@ const LoginForm = () => {
         placeholder='E-mail'
         value={email}
         handleChange={(_, e) => handleChange(e)}
-        readOnly={loading}
+        readOnly={loadingSubmit}
         required
       />
       <Input
@@ -57,11 +63,15 @@ const LoginForm = () => {
         minLength={6}
         value={password}
         handleChange={(_, e) => handleChange(e)}
-        readOnly={loading}
+        readOnly={loadingSubmit}
         required
       />
-      <Button type='submit' disabled={loading}>
-        Entrar
+      <Button type='submit' disabled={loadingSubmit}>
+        {
+          loadingSubmit
+            ? 'Carregando...'
+            : 'Entrar'
+        }
       </Button>
     </form>
   )
