@@ -77,7 +77,7 @@ const useForm = (
 
     if (countErrors) { // Se houver erros
       setLoading(false) // Define o estado de loading como false
-      onError?.(new Error('Formulário inválido', {
+      onError?.(new Error('Invalid Form', {
         cause: {
           ...validationErrors // Passa os erros para a função onError, se fornecida
         }
