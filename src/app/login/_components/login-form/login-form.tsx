@@ -3,8 +3,10 @@
 import Button from "@/components/button/button"
 import Input from "@/components/input/input"
 import useForm, { FormState } from "@/hooks/use-form/use-form"
+import { useRef } from 'react'
 
 const LoginForm = () => {
+  const formRef = useRef<HTMLFormElement>(null)
   const initialLoginForm = {
     email: '',
     password: ''
@@ -19,6 +21,7 @@ const LoginForm = () => {
     handleSubmit,
     errorsCount
   } = useForm(
+    formRef,
     initialLoginForm,
     submitCallback,
     submitErrorCallback
@@ -42,6 +45,7 @@ const LoginForm = () => {
     <form
       className="w-full flex flex-col gap-2"
       onSubmit={handleSubmit}
+      ref={formRef}
       noValidate
     >
       <Input
@@ -67,7 +71,7 @@ const LoginForm = () => {
         readOnly={loadingSubmit}
         required
       />
-      <Button type='submit' disabled={loadingSubmit || !!errorsCount}>
+      <Button type='submit' disabled={loadingSubmit || !!errorsCount || !formRef.current}>
         {
           loadingSubmit
             ? 'Carregando...'

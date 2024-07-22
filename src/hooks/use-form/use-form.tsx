@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useCallback, useState } from 'react'
+import { ChangeEvent, FormEvent, RefObject, useCallback, useEffect, useState } from 'react'
 
 // Define a interface para o estado do formulário, permitindo qualquer chave com valores de qualquer tipo
 export interface FormState {
@@ -11,13 +11,14 @@ interface ErrorsState {
 }
 
 // Define o tipo de função que configura erros personalizados, recebendo um evento de formulário e retornando um objeto ErrorsState
-type SetCustomErrorsFunction = (target: FormEvent<HTMLFormElement>) => ErrorsState
+type SetCustomErrorsFunction = (target: HTMLFormElement) => ErrorsState
 
 // Define o tipo de função de callback para submissão, que recebe os valores do formulário e opcionalmente o evento do formulário, retornando uma Promise
 type SubmitCallbackFunction = (values: FormState, target?: FormEvent<HTMLFormElement>) => Promise<void>
 
 // Hook personalizado useForm para gerenciar formulários
 const useForm = (
+  formRef: RefObject<HTMLFormElement>, // Elemento do formulário
   initialState: FormState, // Estado inicial do formulário
   submitCallback: SubmitCallbackFunction, // Função de callback executada na submissão do formulário
   errorCallback?: (error: Error) => Promise<void>, // Função opcional para lidar com erros
@@ -27,21 +28,27 @@ const useForm = (
   const [data, setData] = useState<FormState>(initialState) // Estado dos dados do formulário, inicializado com o estado inicial
   const [errors, setErrors] = useState<ErrorsState>({}) // Estado dos erros do formulário, inicializado como um objeto vazio
   const [errorsCount, setErrorsCount] = useState(0) // Contador de erros do formulário, inicializado como 0
+  const form = formRef.current // Obtém o elemento do formulário a partir da referência
 
-  const validateOneField = useCallback((input: HTMLInputElement) => {
-    // Cria um objeto para armazenar os erros
-    const isValid = input.checkValidity()
-    if (!isValid) { // Se o campo não for válido
-      errors[input.name] = input.validationMessage // Armazena a mensagem de erro no objeto de erros
-    } else {
-      delete errors[input.name] // Remove o erro do campo do objeto de erros
-    }
-    return errors // Retorna o objeto de erros atualizado
-  }, [errors])
+  // Efeito para lidar com mudanças no Elemento HTML do formulário
+  useEffect(() => {
+    handleErros()
+    // Desabilita o aviso de dependências faltantes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form]) // Executa o efeito quando o formulário mudar
+
+  const countErrors = (errorsObject: ErrorsState) => {
+    const count = Object.keys(errorsObject).length // Conta o número de erros
+    setErrorsCount(count) // Atualiza o contador de erros
+    return count // Retorna o número de erros
+  }
 
   // Função para validar os campos do formulário
-  const validateDefault = useCallback((e: FormEvent<HTMLFormElement>) => {
-    const form = e.currentTarget // Obtém o formulário atual
+  const validateDefault = useCallback(() => {
+    // Se o formulário não existir, retorna um objeto vazio
+    if (form === null) {
+      return {}
+    }
     const formData = new FormData(form) // Cria um objeto FormData com os dados do formulário
     const isFormValid = form.checkValidity() // Verifica se o formulário é válido
 
@@ -54,37 +61,29 @@ const useForm = (
         }
       }
     }
-    setErrors(newErrors) // Atualiza o estado dos erros com os novos erros
-    return newErrors // Retorna os novos erros
-  }, [])
 
-  const handleErros = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-    const newErrors = validateDefault(e) // Valida os campos do formulário
-    const customErrors = setCustomErrors?.(e) // Obtém erros personalizados, se a função for fornecida
+    return newErrors // Retorna os novos erros
+  }, [form])
+
+  const handleErros = useCallback(async () => {
+    if (form === null) { // Se o formulário não existir, não faz nada
+      return { validationErrors: {}, count: 0 }
+    }
+    const newErrors = validateDefault() // Valida os campos do formulário e obtém os erros
+    const customErrors = setCustomErrors?.(form) // Obtém erros personalizados, se a função for fornecida
     const validationErrors = {
       ...newErrors, // Erros padrão
       ...customErrors // Erros personalizados
     }
-    const countErrors = Object.keys(validationErrors).length // Conta o número de erros
-
-    setErrorsCount(countErrors) // Atualiza o contador de erros
-
-    if (countErrors) { // Se houver erros
-      if (errorCallback instanceof Function) {
-        await errorCallback(new Error('Invalid Form', {
-          cause: {
-            ...validationErrors // Passa os erros para a função onError, se fornecida
-          }
-        }))
-      }
-    }
+    setErrors(validationErrors) // Atualiza o estado dos erros com os novos erros
+    const count = countErrors(validationErrors) // Conta o número de erros
 
     // Retorna os erros e o contador de erros
     return {
-      error: validationErrors,
-      count: countErrors
+      validationErrors,
+      count
     }
-  }, [validateDefault, errorCallback, setCustomErrors])
+  }, [validateDefault, setCustomErrors, form])
 
   // Função para lidar com a submissão do formulário
   const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
@@ -96,9 +95,16 @@ const useForm = (
 
     setLoading(true) // Define o estado de loading como true
 
-    const { count } = await handleErros(e) // Valida os campos do formulário e obtém os erros
+    const { count, validationErrors } = await handleErros() // Valida os campos do formulário e obtém os erros
     if (count) {
       setLoading(false)
+      if (errorCallback instanceof Function) {
+        await errorCallback(new Error('Invalid Form', {
+          cause: {
+            ...validationErrors // Passa os erros para a função onError, se fornecida
+          }
+        }))
+      }
       return // Se houver erros, não faz nada
     }
 
@@ -106,10 +112,10 @@ const useForm = (
     await submitCallback(data, e)
 
     setLoading(false) // Define o estado de loading como false após a submissão
-  }, [loading, handleErros, submitCallback, data])
+  }, [loading, handleErros, submitCallback, data, errorCallback])
 
   // Função para lidar com mudanças nos campos do formulário
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target // Extrai o nome e o valor do campo alterado
     setData((oldData) => {
       return {
@@ -118,11 +124,9 @@ const useForm = (
       }
     })
 
-    const newErrors = validateOneField(e.target) // Valida o campo alterado
-    const countErrors = Object.keys(newErrors).length // Conta o número de erros
-    setErrors(newErrors) // Atualiza o estado dos erros
-    setErrorsCount(countErrors) // Atualiza o contador de erros
-  }, [validateOneField])
+
+    await handleErros() // Valida os campos do formulário e obtém os erros
+  }, [handleErros])
 
   // Retorna os estados e funções do hook
   return {
