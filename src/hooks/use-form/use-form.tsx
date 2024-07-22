@@ -20,7 +20,7 @@ type SubmitCallbackFunction = (values: FormState, target?: FormEvent<HTMLFormEle
 const useForm = (
   initialState: FormState, // Estado inicial do formulário
   submitCallback: SubmitCallbackFunction, // Função de callback executada na submissão do formulário
-  onError?: (error: Error) => void, // Função opcional para lidar com erros
+  errorCallback?: (error: Error) => void, // Função opcional para lidar com erros
   setCustomErrors?: SetCustomErrorsFunction, // Função opcional para definir erros personalizados
 ) => {
   const [loading, setLoading] = useState(false) // Estado de loading do formulário, inicializado como false
@@ -77,11 +77,14 @@ const useForm = (
 
     if (countErrors) { // Se houver erros
       setLoading(false) // Define o estado de loading como false
-      onError?.(new Error('Invalid Form', {
-        cause: {
-          ...validationErrors // Passa os erros para a função onError, se fornecida
-        }
-      }))
+
+      if (errorCallback instanceof Function) {
+        errorCallback(new Error('Invalid Form', {
+          cause: {
+            ...validationErrors // Passa os erros para a função onError, se fornecida
+          }
+        }))
+      }
       return // Encerra a função handleSubmit
     }
 
@@ -89,7 +92,7 @@ const useForm = (
     await submitCallback(data, e)
 
     setLoading(false) // Define o estado de loading como false após a submissão
-  }, [loading, setCustomErrors, submitCallback, validateDefault, data, onError])
+  }, [loading, setCustomErrors, submitCallback, validateDefault, data, errorCallback])
 
   // Retorna os estados e funções do hook
   return {
