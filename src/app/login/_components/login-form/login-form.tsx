@@ -16,7 +16,8 @@ const LoginForm = () => {
     },
     loadingSubmit,
     handleChange,
-    handleSubmit
+    handleSubmit,
+    errorsCount
   } = useForm(
     initialLoginForm,
     submitCallback,
@@ -66,7 +67,7 @@ const LoginForm = () => {
         readOnly={loadingSubmit}
         required
       />
-      <Button type='submit' disabled={loadingSubmit}>
+      <Button type='submit' disabled={loadingSubmit || !!errorsCount}>
         {
           loadingSubmit
             ? 'Carregando...'
