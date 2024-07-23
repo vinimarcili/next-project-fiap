@@ -22,7 +22,7 @@ const schema = yup
 const LoginForm = () => {
   const formRef = useRef<HTMLFormElement>(null)
   const [loading, setLoading] = useState(false)
-  const { control, handleSubmit, formState, watch } = useForm<LoginFormData>({
+  const { control, handleSubmit, formState } = useForm<LoginFormData>({
     defaultValues: {
       email: '',
       password: ''
@@ -41,7 +41,7 @@ const LoginForm = () => {
 
     // Verifica se o formulário é válido
     // TODO: Outros erros?
-    if (!formState.isValid) {
+    if (!isValid) {
       await submitErrorCallback()
       setLoading(false)
       return
