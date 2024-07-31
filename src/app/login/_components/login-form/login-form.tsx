@@ -3,9 +3,11 @@
 import Button from "@/components/button/button"
 import Input from "@/components/input/input"
 import useForm, { FormState } from "@/hooks/use-form/use-form"
+import { useRouter } from "next/navigation"
 import { useRef } from 'react'
 
 const LoginForm = () => {
+  const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const initialLoginForm = {
     email: '',
@@ -28,17 +30,42 @@ const LoginForm = () => {
   )
 
   async function submitErrorCallback(error: Error) {
-    // TODO: Tratar erros
-    console.log(error.cause)
+    if (error.cause && Object.keys(error.cause).length) {
+      let message = 'Erro ao realizar login:\n\n'
+      for (const key in error.cause) {
+        const causes = error.cause as { [key: string]: string }
+        message += `- ${causes[key]}\n`
+      }
+      return window.alert(message)
+    }
+
+    return window.alert(error.message)
   }
 
   async function submitCallback(values: FormState) {
-    console.log(values)
+    try {
+      const request = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(values)
+      })
+      const response = await request.json()
 
-    // TODO: Envie os dados do formulário para a API
+      if (!response.token) {
+        throw new Error(response.message)
+      }
 
-    // DO fake request to take 5s
-    await new Promise((resolve) => setTimeout(resolve, 5000))
+      // TODO: Guardar Token
+
+      router.push('/dashboard')
+    } catch (error) {
+      if (error instanceof Error) {
+        return submitErrorCallback(error)
+      }
+      return submitErrorCallback(new Error('Erro ao realizar login'))
+    }
   }
 
   return (
