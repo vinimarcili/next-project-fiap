@@ -30,20 +30,26 @@ const LoginForm = () => {
   )
 
   async function submitErrorCallback(error: Error) {
+    // Verificar se o erro contém causas
     if (error.cause && Object.keys(error.cause).length) {
+      // Mostrar mensagem de erro para cada causa
       let message = 'Erro ao realizar login:\n\n'
       for (const key in error.cause) {
+        // Adicionar causa ao texto da mensagem
         const causes = error.cause as { [key: string]: string }
         message += `- ${causes[key]}\n`
       }
+      // Exibir mensagem de erro
       return window.alert(message)
     }
 
+    // Exibir mensagem de erro quando não houver causas
     return window.alert(error.message)
   }
 
   async function submitCallback(values: FormState) {
     try {
+      // Enviar requisição para a API
       const request = await fetch('/api/login', {
         method: 'POST',
         headers: {
@@ -51,16 +57,20 @@ const LoginForm = () => {
         },
         body: JSON.stringify(values)
       })
+      // Ler a resposta da API
       const response = await request.json()
 
+      // Verificar se a resposta contém um token
       if (!response.token) {
         throw new Error(response.message)
       }
 
       // TODO: Guardar Token
 
+      // Redirecionar para a página de dashboard
       router.push('/dashboard')
     } catch (error) {
+      // Tratar erro
       if (error instanceof Error) {
         return submitErrorCallback(error)
       }
