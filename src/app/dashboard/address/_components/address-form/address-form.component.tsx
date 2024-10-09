@@ -92,14 +92,20 @@ const AddressForm = () => {
           return
         }
 
-        handleChange({
-          target: { name: "street", value: response.logradouro },
-        } as React.ChangeEvent<HTMLInputElement>)
+        // update all fields with response
+        handleChange({ target: { name: "street", value: response.logradouro } } as React.ChangeEvent<HTMLInputElement>)
+        handleChange({ target: { name: "complement", value: response.complemento } } as React.ChangeEvent<HTMLInputElement>)
+        handleChange({ target: { name: "neighborhood", value: response.bairro } } as React.ChangeEvent<HTMLInputElement>)
+        handleChange({ target: { name: "city", value: response.localidade } } as React.ChangeEvent<HTMLInputElement>)
+        handleChange({ target: { name: "state", value: response.uf } } as React.ChangeEvent<HTMLInputElement>)
+        handleChange({ target: { name: "country", value: "Brasil" } } as React.ChangeEvent<HTMLInputElement>)
+
+        formRef.current?.number.focus()
       } catch (error) {
         console.error(error)
       }
     },
-    [handleChange]
+    [handleChange, formRef]
   )
 
   return (
