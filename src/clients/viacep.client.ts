@@ -12,6 +12,7 @@ export type ViaCepResponse = {
 }
 
 export async function getZipcode(zipcode: string): Promise<ViaCepResponse | null> {
+  // 03132-125 -> 03132125
   const sanitized = zipcode.replace(/\D/g, '')
 
   if (sanitized.length !== 8) {
