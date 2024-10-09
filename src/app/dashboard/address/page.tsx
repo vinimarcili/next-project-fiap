@@ -1,12 +1,12 @@
 import AddressForm from "./_components/address-form/address-form.component"
 
-const HomeDashboardPage = () => {
+const AddressPage = () => {
   return <>
-    <h6 className="text-center" style={{ minHeight: 'calc(100vh - 36px)' }}>
-      Address Page
-    </h6>
-    <AddressForm />
+    <div className='p-3 rounded mx-auto w-full h-full flex ' style={{ maxWidth: '500px' }}>
+      <h6 className="text-2xl font-semibold text-center mb-4">Address Page</h6>
+      <AddressForm />
+    </div>
   </>
 }
 
-export default HomeDashboardPage
+export default AddressPage
