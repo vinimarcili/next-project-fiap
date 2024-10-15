@@ -22,7 +22,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<LoginResp
     }
 
     // TODO: Implementar lógica de autenticação
-    if (email === 'email@teste.com' && password === '123456') {
+    if (password === process.env.API_SECRET) {
       return NextResponse.json({ token: 'token' })
     }
 
