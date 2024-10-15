@@ -20,7 +20,7 @@ export async function getZipcode(zipcode: string): Promise<ViaCepResponse | null
   }
 
   try {
-    const response = await fetch(`https://viacep.com.br/ws/${sanitized}/json/`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_VIA_CEP_API_URL}/ws/${sanitized}/json/`)
 
     if (!response.ok) {
       throw new Error(`Erro ao buscar CEP: ${response.statusText}`)
