@@ -3,6 +3,7 @@
 import Button from "@/components/button/button"
 import Input from "@/components/input/input"
 import useForm, { FormState } from "@/hooks/use-form/use-form"
+import { setCookie } from "@/utils/cookie/cookie"
 import { useRouter } from "next/navigation"
 import { useRef } from 'react'
 
@@ -65,7 +66,11 @@ const LoginForm = () => {
         throw new Error(response.message)
       }
 
-      // TODO: Guardar Token
+      // Salvar o token no cookie
+      setCookie('token', response.token)
+
+      // Salvar token no localStorage
+      localStorage.setItem('token', response.token)
 
       // Redirecionar para a página de dashboard
       router.push('/dashboard')
@@ -94,6 +99,7 @@ const LoginForm = () => {
         value={email}
         handleChange={(_, e) => handleChange(e)}
         readOnly={loadingSubmit}
+        autoComplete="email"
         required
       />
       <Input
@@ -106,6 +112,7 @@ const LoginForm = () => {
         value={password}
         handleChange={(_, e) => handleChange(e)}
         readOnly={loadingSubmit}
+        autoComplete='current-password'
         required
       />
       <Button type='submit' disabled={loadingSubmit || !!errorsCount || !formRef.current}>

@@ -1,9 +1,14 @@
-const HomeDashboardPage = () => {
-  return <>
-    <h6 className="text-center" style={{ minHeight: 'calc(100vh - 36px)' }}>
+import Link from "next/link"
+
+const HomeDashboardPage = async () => {
+  return <div className='text-center'>
+    <h6 className="text-center">
       Home Dashboard Page
     </h6>
-  </>
+    <Link className='text-green-500 underline' href='/dashboard/address'>
+      Ver endereço
+    </Link>
+  </div>
 }
 
 export default HomeDashboardPage

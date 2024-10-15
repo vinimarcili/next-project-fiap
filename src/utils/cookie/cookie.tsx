@@ -19,8 +19,8 @@ export function setCookie(name: string, value: string, days?: number) {
   document.cookie = cookieString
 }
 
-export function deleteCookie(name: string, path: string, domain: string) {
+export function deleteCookie(name: string) {
   if (getCookie(name)) {
-    document.cookie = `${name}=; path=${path}; domain=${domain}; expires=Thu, 01 Jan 1970 00:00:01 GMT`
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:01 GMT`
   }
 }
