@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { getZipcode } from "@/clients/viacep.client";
-import Button from "@/components/button/button";
-import Input from "@/components/input/input";
-import useForm, { FormState } from "@/hooks/use-form/use-form";
-import { useCallback, useRef } from "react";
+import { getZipcode } from "@/clients/viacep.client"
+import Button from "@/components/button/button"
+import Input from "@/components/input/input"
+import useForm, { FormState } from "@/hooks/use-form/use-form"
+import { useCallback, useRef } from "react"
 
 const AddressForm = () => {
-  const formRef = useRef<HTMLFormElement>(null);
+  const formRef = useRef<HTMLFormElement>(null)
   const initialLoginForm = {
     zipcode: "",
     street: "",
@@ -17,7 +17,7 @@ const AddressForm = () => {
     city: "",
     state: "",
     country: "",
-  };
+  }
   const {
     data: {
       zipcode,
@@ -33,24 +33,24 @@ const AddressForm = () => {
     handleChange,
     handleSubmit,
     errorsCount,
-  } = useForm(formRef, initialLoginForm, submitCallback, submitErrorCallback);
+  } = useForm(formRef, initialLoginForm, submitCallback, submitErrorCallback)
 
   async function submitErrorCallback(error: Error) {
     // Verificar se o erro contém causas
     if (error.cause && Object.keys(error.cause).length) {
       // Mostrar mensagem de erro para cada causa
-      let message = "Erro ao salvar endereço :\n\n";
+      let message = "Erro ao salvar endereço :\n\n"
       for (const key in error.cause) {
         // Adicionar causa ao texto da mensagem
-        const causes = error.cause as { [key: string]: string };
-        message += `- ${causes[key]}\n`;
+        const causes = error.cause as { [key: string]: string }
+        message += `- ${causes[key]}\n`
       }
       // Exibir mensagem de erro
-      return window.alert(message);
+      return window.alert(message)
     }
 
     // Exibir mensagem de erro quando não houver causas
-    return window.alert(error.message);
+    return window.alert(error.message)
   }
 
   async function submitCallback(values: FormState) {
@@ -62,34 +62,34 @@ const AddressForm = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
-      });
+      })
       // Ler a resposta da API
-      const response = await request.json();
+      const response = await request.json()
 
       // Verificar se a resposta contém um token
       if (!response.token) {
-        throw new Error(response.message);
+        throw new Error(response.message)
       }
 
-      window.alert("Endereço salvo com sucesso!");
+      window.alert("Endereço salvo com sucesso!")
     } catch (error) {
       // Tratar erro
       if (error instanceof Error) {
-        return submitErrorCallback(error);
+        return submitErrorCallback(error)
       }
-      return submitErrorCallback(new Error("Erro ao salvar endereço"));
+      return submitErrorCallback(new Error("Erro ao salvar endereço"))
     }
   }
 
   const onZipCodeChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       try {
-        handleChange(e);
+        handleChange(e)
 
-        const response = await getZipcode(e.target.value);
+        const response = await getZipcode(e.target.value)
 
         if (!response) {
-          return;
+          return
         }
 
         const addressFields = {
@@ -99,21 +99,21 @@ const AddressForm = () => {
           city: response.localidade,
           state: response.uf,
           country: "Brasil",
-        };
+        }
         
         Object.entries(addressFields).forEach(([name, value]) => {
           handleChange({
             target: { name, value },
-          } as React.ChangeEvent<HTMLInputElement>);
-        });
+          } as React.ChangeEvent<HTMLInputElement>)
+        })
 
-        formRef.current?.number.focus();
+        formRef.current?.number.focus()
       } catch (error) {
-        console.error(error);
+        console.error(error)
       }
     },
     [handleChange, formRef]
-  );
+  )
 
   return (
     <form
@@ -216,7 +216,7 @@ const AddressForm = () => {
         {loadingSubmit ? "Carregando..." : "Salvar"}
       </Button>
     </form>
-  );
-};
+  )
+}
 
-export default AddressForm;
+export default AddressForm

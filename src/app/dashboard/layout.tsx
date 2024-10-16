@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import { ReactNode } from "react"
-import ButtonLogout from "./(components)/button-logout.component";
+import ButtonLogout from "./(components)/button-logout.component"
 
 interface DashboardLayoutProps {
   children: ReactNode
