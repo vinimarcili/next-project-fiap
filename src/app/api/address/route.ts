@@ -96,7 +96,6 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     if (!foundedAddress) {
       return NextResponse.json({
-        ok: true,
         message: 'Endereço não encontrado.'
       }, { status: 404 })
     }
@@ -104,6 +103,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     // TODO: Deletar de onde estiver salvo
 
     return NextResponse.json({
+      ok: true,
       message: 'Endereço deletado com sucesso.'
     }, { status: 200 })
   } catch (error) {

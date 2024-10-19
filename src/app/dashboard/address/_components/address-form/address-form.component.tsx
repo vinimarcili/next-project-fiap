@@ -184,7 +184,7 @@ const AddressForm = ({ zipcodeParam }: AddressFormProps) => {
         throw new Error(response.message)
       }
 
-      // window.alert("Endereço excluído com sucesso!")
+      window.alert("Endereço excluído com sucesso!")
       router.push('/dashboard/address')
     } catch (error) {
       // Tratar erro
