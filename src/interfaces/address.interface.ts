@@ -8,3 +8,7 @@ export interface Address {
   state: string
   country: string
 }
+
+export interface AddressWithEmail extends Address {
+  email: string
+}

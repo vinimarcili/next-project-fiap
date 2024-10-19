@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
   // Se válido, você pode armazenar o e-mail para uso posterior
   request.user = { email: token }
 
-  return NextResponse.next()
+  return
 }
 
 // Função simples para validar o formato do e-mail (opcional)
@@ -31,3 +31,4 @@ function isValidEmail(email: string) {
 }
 
 export const authMiddleware = middleware
+

@@ -5,10 +5,17 @@ import Button from "@/components/button/button"
 import Input from "@/components/input/input"
 import useForm, { FormState } from "@/hooks/use-form/use-form"
 import { Address } from "@/interfaces/address.interface"
-import { useCallback, useRef } from "react"
+import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
 
-const AddressForm = () => {
+interface AddressFormProps {
+  zipcodeParam: string
+}
+
+const AddressForm = ({ zipcodeParam }: AddressFormProps) => {
+  const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
+  const [loading, setLoading] = useState(zipcodeParam !== 'new')
   const initialLoginForm: Address = {
     zipcode: "",
     street: "",
@@ -36,6 +43,43 @@ const AddressForm = () => {
     errorsCount,
   } = useForm(formRef, initialLoginForm, submitCallback, submitErrorCallback)
 
+  async function getAddress(zipcode: string) {
+    if (!zipcode) {
+      return
+    }
+
+    const token = localStorage.getItem('token') ?? '' // Obtém o token de autenticação do localStorage.
+    
+    // Faz a requisição à API para obter todos os endereços
+    const res = await fetch(`/api/address?zipcode=${zipcode}`, {
+      method: 'GET', // Método HTTP da requisição
+      headers: {
+        'Content-Type': 'application/json', // Define o tipo de conteúdo da requisição
+        'Authorization': token // Adiciona o token de autenticação no cabeçalho
+      }
+    })
+
+    return await res.json() // Retorna a resposta JSON da requisição
+  }
+
+  useEffect(() => {
+    if (zipcodeParam && zipcodeParam !== 'new') {
+      setLoading(true)
+      getAddress(zipcodeParam)
+      .then((data) => {
+        if (data && data?.length) {
+          const address = data[0] as Address
+          Object.entries(address).forEach(([name, value]) => {
+            handleChange({
+              target: { name, value },
+            } as React.ChangeEvent<HTMLInputElement>)
+          })
+        }
+      })
+      .finally(() => setLoading(false))
+    }
+  }, [zipcodeParam, handleChange])
+
   async function submitErrorCallback(error: Error) {
     // Verificar se o erro contém causas
     if (error.cause && Object.keys(error.cause).length) {
@@ -61,6 +105,7 @@ const AddressForm = () => {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: localStorage.getItem("token") ?? "",
         },
         body: JSON.stringify(values),
       })
@@ -115,6 +160,42 @@ const AddressForm = () => {
     },
     [handleChange, formRef]
   )
+
+  const deleteAddress = useCallback(async () => {
+    const confirm = window.confirm("Deseja realmente excluir este endereço?")
+    if (!zipcode || !confirm || loading) {
+      return
+    }
+    try {
+      setLoading(true)
+      // Enviar requisição para a API
+      const request = await fetch(`/api/address?zipcode=${zipcode}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("token") ?? "",
+        },
+      })
+      // Ler a resposta da API
+      const response = await request.json()
+
+      // Verificar se a resposta contém um token
+      if (!response.ok) {
+        throw new Error(response.message)
+      }
+
+      // window.alert("Endereço excluído com sucesso!")
+      router.push('/dashboard/address')
+    } catch (error) {
+      // Tratar erro
+      if (error instanceof Error) {
+        return submitErrorCallback(error)
+      }
+      return submitErrorCallback(new Error("Erro ao excluir endereço"))
+    } finally {
+      setLoading(false)
+    }
+  }, [zipcode, loading, router])
 
   return (
     <form
@@ -212,10 +293,22 @@ const AddressForm = () => {
       />
       <Button
         type="submit"
-        disabled={loadingSubmit || !!errorsCount || !formRef.current}
+        disabled={loadingSubmit || !!errorsCount || !formRef.current || loading}
       >
-        {loadingSubmit ? "Carregando..." : "Salvar"}
+        {loadingSubmit || loading ? "Carregando..." : "Salvar"}
       </Button>
+      {
+        zipcodeParam !== 'new' && (
+          <Button
+            type="button"
+            handleClick={deleteAddress}
+            disabled={loadingSubmit || !formRef.current || loading}
+            className="bg-red-500 hover:bg-red-600"
+          >
+            {loading ? "Carregando..." : "Excluir"}
+          </Button>
+        )
+      }
     </form>
   )
 }
