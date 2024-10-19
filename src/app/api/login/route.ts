@@ -21,9 +21,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<LoginResp
       }, { status: 400 })
     }
 
-    // TODO: Implementar lógica de autenticação
     if (password === process.env.API_SECRET) {
-      return NextResponse.json({ token: 'token' })
+      return NextResponse.json({ token: email })
     }
 
     return NextResponse.json({
