@@ -6,11 +6,15 @@ interface RedirectProps {
   permanent?: boolean
 }
 
-const Redirect = ({ path, permanent = false }: RedirectProps) => {
-  if (permanent) {
-    return permanentRedirect(path)
+const Redirect = (props: RedirectProps) => {
+  if (props) {
+    const { path, permanent } = props
+    if (permanent) {
+      return permanentRedirect(path)
+    }
+    return redirect(path)
   }
-  return redirect(path)
+  return null
 }
 
 export default Redirect
