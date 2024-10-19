@@ -8,6 +8,7 @@ const ButtonLogout = () => {
   const router = useRouter() // Usa o hook 'useRouter' para obter uma instância do roteador do Next.js, permitindo navegação entre as rotas.
 
   const logout = () => { 
+    localStorage.removeItem('token') // Remove o token do localStorage, caso exista.
     deleteCookie('token') // Apaga o cookie 'token', que é o cookie de autenticação, efetivamente desconectando o usuário.
     router.push('/login') // Redireciona o usuário para a página de login após o logout.
   }
@@ -20,3 +21,4 @@ const ButtonLogout = () => {
 }
 
 export default ButtonLogout // Exporta o componente 'ButtonLogout' para ser usado em outras partes da aplicação.
+ 
