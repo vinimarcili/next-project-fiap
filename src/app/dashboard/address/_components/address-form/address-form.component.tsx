@@ -4,11 +4,12 @@ import { getZipcode } from "@/clients/viacep.client"
 import Button from "@/components/button/button"
 import Input from "@/components/input/input"
 import useForm, { FormState } from "@/hooks/use-form/use-form"
+import { Address } from "@/interfaces/address.interface"
 import { useCallback, useRef } from "react"
 
 const AddressForm = () => {
   const formRef = useRef<HTMLFormElement>(null)
-  const initialLoginForm = {
+  const initialLoginForm: Address = {
     zipcode: "",
     street: "",
     number: "",
@@ -57,7 +58,7 @@ const AddressForm = () => {
     try {
       // Enviar requisição para a API
       const request = await fetch("/api/address", {
-        method: "POST",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
