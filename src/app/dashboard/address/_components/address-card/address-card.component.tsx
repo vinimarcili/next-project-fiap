@@ -8,7 +8,7 @@ interface AddressCardProps {
 
 const AddressCard = ({ address, index }: AddressCardProps) => {
   return (
-    <Link href={`/address/${address.zipcode}`} className='h-full'>
+    <Link href={`/dashboard/address/${address.zipcode}`} className='h-full'>
       <div className="p-4 border border-gray-300 rounded bg-branch transition hover:bg-opacity-75 cursor-pointer bg-white">
         <h6 className="font-semibold">Endereço {index + 1}</h6>
         <p>{address.street}, {address.number}</p>
