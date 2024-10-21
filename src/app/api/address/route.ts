@@ -1,24 +1,12 @@
 import { Address } from "@/interfaces/address.interface"
 import { NextRequest, NextResponse } from "next/server"
-import { authMiddleware } from "../(middlewares)/auth.middleware"
+
 import addressList from './(data)/address.json'
 
 // Função assíncrona que trata requisições GET.
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    // Chama o middleware de autenticação passando a requisição.
-    const authResponse = await authMiddleware(request)
-
-    // Se a autenticação falhar, retorna a resposta do middleware.
-    if (authResponse) {
-      return authResponse
-    }
-
-    // Desestrutura o objeto 'user' da requisição, que contém as informações do usuário autenticado.
-    const { user } = request
-
-    // Extrai o email do usuário. O tipo do usuário é especificado para garantir que o email esteja presente.
-    const { email } = user
+    const email = request.headers.get('x-user-email')
 
     // getQuery params
     const url = request.nextUrl
@@ -36,6 +24,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Retorna a lista de endereços do usuário no formato JSON com status 200.
     return NextResponse.json(userAddresses, { status: 200 })
   } catch (error) {
+    console.error(error)
     // Em caso de erro, retorna uma mensagem de erro genérica com status 500.
     return NextResponse.json({
       message: 'Erro interno no servidor.'
@@ -45,10 +34,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
-    const authResponse = await authMiddleware(request)
-    if (authResponse) {
-      return authResponse
-    }
+    const email = request.headers.get('x-user-email')
 
     const body: Address = await request.json()
 
@@ -61,14 +47,23 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 })
     }
 
-    // TODO: Salvar em algum lugar
+    // Alterar JSON
+    const addressIndex = addressList.findIndex((address) => address.zipcode === zipcode && address.email === email)
 
-    // Supondo que a operação foi bem-sucedida
+    if (addressIndex >= 0) {
+      addressList[addressIndex] = { ...addressList[addressIndex], ...body }
+    }
+
+    if (addressIndex === -1) {
+      addressList.push({ ...body, email: request.user.email })
+    }
+
     return NextResponse.json({
       message: 'Endereço criado/atualizado com sucesso.',
       address: body
     }, { status: 200 })
   } catch (error) {
+    console.error(error)
     return NextResponse.json({
       message: 'Erro interno no servidor.'
     }, { status: 500 })
@@ -77,10 +72,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
-    const authResponse = await authMiddleware(request)
-    if (authResponse) {
-      return authResponse
-    }
+    const email = request.headers.get('x-user-email')
 
     const url = request.nextUrl
     const queryParams = url.searchParams
@@ -92,21 +84,22 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 })
     }
 
-    const foundedAddress = addressList.find((address) => address.zipcode === zipcode && address.email === request.user.email)
+    const foundedAddress = addressList.findIndex((address) => address.zipcode === zipcode && address.email === email)
 
-    if (!foundedAddress) {
+    if (foundedAddress < 0) {
       return NextResponse.json({
         message: 'Endereço não encontrado.'
       }, { status: 404 })
     }
 
-    // TODO: Deletar de onde estiver salvo
+    addressList.splice(foundedAddress, 1)
 
     return NextResponse.json({
       ok: true,
       message: 'Endereço deletado com sucesso.'
     }, { status: 200 })
   } catch (error) {
+    console.error(error)
     return NextResponse.json({
       message: 'Erro interno no servidor.'
     }, { status: 500 })
