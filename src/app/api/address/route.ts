@@ -61,9 +61,17 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 })
     }
 
-    // TODO: Salvar em algum lugar
+    // Alterar JSON
+    const addressIndex = addressList.findIndex((address) => address.zipcode === zipcode && address.email === request.user.email)
 
-    // Supondo que a operação foi bem-sucedida
+    if (addressIndex >= 0) {
+      addressList[addressIndex] = { ...addressList[addressIndex], ...body }
+    }
+
+    if (addressIndex === -1) {
+      addressList.push({ ...body, email: request.user.email })
+    }
+
     return NextResponse.json({
       message: 'Endereço criado/atualizado com sucesso.',
       address: body
@@ -92,15 +100,15 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 })
     }
 
-    const foundedAddress = addressList.find((address) => address.zipcode === zipcode && address.email === request.user.email)
+    const foundedAddress = addressList.findIndex((address) => address.zipcode === zipcode && address.email === request.user.email)
 
-    if (!foundedAddress) {
+    if (foundedAddress < 0) {
       return NextResponse.json({
         message: 'Endereço não encontrado.'
       }, { status: 404 })
     }
 
-    // TODO: Deletar de onde estiver salvo
+    addressList.splice(foundedAddress, 1)
 
     return NextResponse.json({
       ok: true,
