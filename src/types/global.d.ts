@@ -1,5 +1,5 @@
 declare global {
-  var _mongoClientPromise: Promise<MongoClient> | undefined
+  var _mongoClient: MongoClient | undefined
 }
 
 export { }

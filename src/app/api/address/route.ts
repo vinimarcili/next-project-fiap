@@ -1,7 +1,8 @@
-import { Address } from "@/interfaces/address.interface"
+import { Address, AddressDocument } from "@/interfaces/address.interface"
 import { NextRequest, NextResponse } from "next/server"
-
 import addressList from './(data)/address.json'
+import { GenericRepository } from "@/repositories/generic.repository"
+const addressCollection = new GenericRepository<AddressDocument>('address')
 
 // Função assíncrona que trata requisições GET.
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -13,13 +14,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const queryParams = url.searchParams
     const zipcode = queryParams.get('zipcode')
 
-    // Filtra a lista de endereços para encontrar apenas aqueles que correspondem ao email do usuário.
-    const userAddresses = addressList.filter((address) => {
-      if (zipcode) {
-        return address.email === email && address.zipcode === zipcode
-      }
-      return address.email === email
-    }) ?? []
+
+    // // Filtra a lista de endereços para encontrar apenas aqueles que correspondem ao email do usuário.
+    // const userAddresses = addressList.filter((address) => {
+    //   if (zipcode) {
+    //     return address.email === email && address.zipcode === zipcode
+    //   }
+    //   return address.email === email
+    // }) ?? []
+
+    const userAddresses = addressCollection.findAll({ email: email })
 
     // Retorna a lista de endereços do usuário no formato JSON com status 200.
     return NextResponse.json(userAddresses, { status: 200 })

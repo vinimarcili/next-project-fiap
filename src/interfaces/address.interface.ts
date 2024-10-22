@@ -1,3 +1,5 @@
+import { Document } from "mongodb"
+
 export interface Address {
   zipcode: string
   street: string
@@ -12,3 +14,6 @@ export interface Address {
 export interface AddressWithEmail extends Address {
   email: string
 }
+
+
+export interface AddressDocument extends Address, Document { }
