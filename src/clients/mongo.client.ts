@@ -1,12 +1,11 @@
 import { MongoClient } from 'mongodb'
-
 // Se a URI não estiver definida, lançamos um erro indicando que a variável de ambiente MONGODB_URI está ausente
-if (!process.env.MONGODB_URI || process.env.MONGO_DATABASE) {
+if (!process.env.MONGO_URI || !process.env.MONGO_DATABASE) {
   throw new Error('Please add your Mongo URI and MONGO DATABASE to environment variables')
 }
 
 // A URI de conexão com o MongoDB, retirada das variáveis de ambiente
-const uri = process.env.MONGODB_URI + process.env.MONGO_DATABASE
+const uri = process.env.MONGO_URI + process.env.MONGO_DATABASE
 // Opções adicionais para a conexão (pode ser vazio se não houver opções extras)
 const options = {}
 

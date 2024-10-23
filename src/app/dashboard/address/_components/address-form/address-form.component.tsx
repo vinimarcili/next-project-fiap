@@ -109,15 +109,9 @@ const AddressForm = ({ zipcodeParam }: AddressFormProps) => {
         },
         body: JSON.stringify(values),
       })
-      // Ler a resposta da API
-      const response = await request.json()
-
-      // Verificar se a resposta contém um token
-      if (!response.token) {
-        throw new Error(response.message)
-      }
-
+      
       window.alert("Endereço salvo com sucesso!")
+      router.push('/dashboard/address')
     } catch (error) {
       // Tratar erro
       if (error instanceof Error) {

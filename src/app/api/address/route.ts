@@ -2,28 +2,23 @@ import { Address, AddressDocument } from "@/interfaces/address.interface"
 import { NextRequest, NextResponse } from "next/server"
 import addressList from './(data)/address.json'
 import { GenericRepository } from "@/repositories/generic.repository"
+
 const addressCollection = new GenericRepository<AddressDocument>('address')
 
 // Função assíncrona que trata requisições GET.
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const email = request.headers.get('x-user-email')
+    const email = request.headers.get('x-user-email') ?? ''
 
     // getQuery params
     const url = request.nextUrl
     const queryParams = url.searchParams
     const zipcode = queryParams.get('zipcode')
 
-
-    // // Filtra a lista de endereços para encontrar apenas aqueles que correspondem ao email do usuário.
-    // const userAddresses = addressList.filter((address) => {
-    //   if (zipcode) {
-    //     return address.email === email && address.zipcode === zipcode
-    //   }
-    //   return address.email === email
-    // }) ?? []
-
-    const userAddresses = addressCollection.findAll({ email: email })
+    const userAddresses = await addressCollection.findAll({
+      email: email,
+      ...(zipcode && { zipcode: zipcode })
+    })
 
     // Retorna a lista de endereços do usuário no formato JSON com status 200.
     return NextResponse.json(userAddresses, { status: 200 })
@@ -38,7 +33,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
-    const email = request.headers.get('x-user-email')
+    const email = request.headers.get('x-user-email') ?? ''
 
     const body: Address = await request.json()
 
@@ -51,16 +46,14 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 })
     }
 
-    // Alterar JSON
-    const addressIndex = addressList.findIndex((address) => address.zipcode === zipcode && address.email === email)
-
-    if (addressIndex >= 0) {
-      addressList[addressIndex] = { ...addressList[addressIndex], ...body }
-    }
-
-    if (addressIndex === -1) {
-      addressList.push({ ...body, email: request.user.email })
-    }
+    await addressCollection.upsert(
+      {
+        email,
+        zipcode
+      }, {
+        ...body,
+        email
+      } as AddressDocument)
 
     return NextResponse.json({
       message: 'Endereço criado/atualizado com sucesso.',
@@ -76,7 +69,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
   try {
-    const email = request.headers.get('x-user-email')
+    const email = request.headers.get('x-user-email') ?? ''
 
     const url = request.nextUrl
     const queryParams = url.searchParams
@@ -88,15 +81,20 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 })
     }
 
-    const foundedAddress = addressList.findIndex((address) => address.zipcode === zipcode && address.email === email)
+    const foundedAddress = await addressCollection.findOne({
+      email: email,
+      zipcode: zipcode
+    })
 
-    if (foundedAddress < 0) {
+    if (!foundedAddress) {
       return NextResponse.json({
         message: 'Endereço não encontrado.'
       }, { status: 404 })
     }
 
-    addressList.splice(foundedAddress, 1)
+    await addressCollection.delete({
+      _id: foundedAddress._id
+    })
 
     return NextResponse.json({
       ok: true,

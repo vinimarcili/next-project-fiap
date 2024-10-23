@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react" // Importa os hooks useEffect e useState do React.
 import { AddressWithEmail } from '../../../interfaces/address.interface' // Importa a interface AddressWithEmail para tipagem.
 import AddressCard from "./_components/address-card/address-card.component" // Importa o componente AddressCard para exibir informações de endereços.
+import Link from "next/link"
 
 const AddressPage = () => {
   const [addresses, setAddresses] = useState<AddressWithEmail[]>([]) // Estado para armazenar a lista de endereços
@@ -18,8 +19,8 @@ const AddressPage = () => {
         'Authorization': token // Adiciona o token de autenticação no cabeçalho
       }
     })
-    
-    return await res.json() // Retorna a resposta JSON da requisição
+    const response =  await res.json()
+    return Array.isArray(response) ? response : [] // Retorna a lista de endereços ou um array vazio se não houver endereços
   }
 
   // Hook useEffect para buscar a lista de endereços ao montar o componente
@@ -47,6 +48,14 @@ const AddressPage = () => {
           </div>
         )
       }
+      {
+        !loading && addresses.length === 0 && ( // Verifica se não está carregando e se não há endereços
+          <p className="text-center mt-4">Nenhum endereço cadastrado.</p>
+        )
+      }
+      <Link className='text-green-500 underline mt-3' href="/dashboard/address/new">
+        Novo endereço
+      </Link>
     </div>
   )
 }

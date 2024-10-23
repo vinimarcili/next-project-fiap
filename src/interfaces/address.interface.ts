@@ -1,4 +1,4 @@
-import { Document } from "mongodb"
+import { Document, WithId } from "mongodb"
 
 export interface Address {
   zipcode: string
@@ -16,4 +16,4 @@ export interface AddressWithEmail extends Address {
 }
 
 
-export interface AddressDocument extends Address, Document { }
+export interface AddressDocument extends WithId<AddressWithEmail> { }
